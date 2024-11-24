@@ -368,4 +368,3 @@ ostream& operator<<(ostream& out, const NeuralNetwork& nn) {
     out << static_cast<const Graph&>(nn) << endl;
     return out;
 }
-

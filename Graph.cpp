@@ -92,17 +92,50 @@ std::ostream& operator<<(std::ostream& out, const Connection& c) {
 
 // STUDENT TODO: IMPLEMENT
 void Graph::updateNode(int id, NodeInfo n) {
-    if (true /* stub condition: change this to the correct condition*/) {
+    if (id < 0  || id >= nodes.size() ) {
         cout << "Attempting to update node with id: " << id << " but node does not exist" << endl;
         return;
     }
 
-    return; //stub
+    if(nodes[id] == nullptr){ //if the node doesn't exist
+        nodes[id] = new NodeInfo(n);
+    }
+
+    else{ //if it does exist, then we update it
+        *nodes[id] = n;
+    }
+
+    return; 
 }
 
 // STUDENT TODO: IMPLEMENT
 NodeInfo* Graph::getNode(int id) const {
-    return nullptr; //stub
+
+    if(id < 0 || id >= nodes.size()){ //we might need a nodes.size - 1.
+        cout << "Attempting to access node with id: " << id << " but node " << id << " does not exist" << endl;
+        return nullptr;
+    }
+    if(nodes[id] == nullptr){ //if the node inside the vector nodes also is a nullptr
+        cout << "Attempting to access node with id: " << id << " but node " << id << " does not exist" << endl;
+        return nullptr;
+    }
+    //above proves that node doesn't exist;
+    else{
+        return nodes[id];
+    }
+
+    /*
+    NodeInfo contents
+    preActivationValue = 0;
+    bias = 0;
+    activationFunction = identity;
+    activationDerivative = identity;
+    activate();
+    delta = 0;
+    */
+    //This method should return a pointer to the NodeInfo object at the index id.
+    //below is a temp return
+    // return nullptr; //stub
 }
 
 // STUDENT TODO: IMPLEMENT
