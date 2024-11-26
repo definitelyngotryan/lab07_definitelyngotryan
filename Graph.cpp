@@ -111,50 +111,55 @@ void Graph::updateNode(int id, NodeInfo n) {
 // STUDENT TODO: IMPLEMENT
 NodeInfo* Graph::getNode(int id) const {
 
-    if(id < 0 || id >= nodes.size()){ //we might need a nodes.size - 1.
-        cout << "Attempting to access node with id: " << id << " but node " << id << " does not exist" << endl;
+    if (id < 0  || id >= nodes.size() || nodes[id] == nullptr) {
+        cout << "Attempting to access node with id: " << id << " but node does not exist" << endl;
         return nullptr;
     }
-    if(nodes[id] == nullptr){ //if the node inside the vector nodes also is a nullptr
-        cout << "Attempting to access node with id: " << id << " but node " << id << " does not exist" << endl;
-        return nullptr;
-    }
-    //above proves that node doesn't exist;
+
     else{
         return nodes[id];
     }
-
-    /*
-    NodeInfo contents
-    preActivationValue = 0;
-    bias = 0;
-    activationFunction = identity;
-    activationDerivative = identity;
-    activate();
-    delta = 0;
-    */
-    //This method should return a pointer to the NodeInfo object at the index id.
-    //below is a temp return
-    // return nullptr; //stub
+ 
 }
 
 // STUDENT TODO: IMPLEMENT
 void Graph::updateConnection(int v, int u, double w) {
-    if (true /* stub condition: change this to the correct condition*/) {
+    if (v < 0  || v >= nodes.size() || nodes[v] == nullptr ) {
         cerr << "Attempting to update connection between " << v << " and " << u << " with weight " << w << " but " << v << " does not exist" << endl;
         exit(1);
     }
-    if (true /* stub condition: change this to the correct condition*/) {
+
+    if (u < 0  || u >= nodes.size() || nodes[u] == nullptr) {
         cerr << "Attempting to update connection between " << v << " and " << u << " with weight " << w << " but " << u << " does not exist" << endl;
         exit(1);
     }
+
+    //if the connection already exists
+    if( adjacencyList[v].find(u) != adjacencyList[u].end()){
+        adjacencyList[v].at(u).weight = w; // update the U's weight to w
+
+        return; //connection already exists
+    }
+
+    // if the connection DOES NOT already exist
+    //then we need to update their connections
+    else{
+        adjacencyList[v][u] = Connection(v, u, w);
+
+        return;
+    }
     
-    return; //stub
+    return; 
 }
 
 // STUDENT TODO: IMPLEMENT
 void Graph::clear() {
-    return; //stub
+    for(NodeInfo* node : nodes){
+        delete node;
+    }
+
+    nodes.clear();
+    adjacencyList.clear();
 }
 
 

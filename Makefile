@@ -1,4 +1,4 @@
-CXX=g++
+./test_neuralnetCXX=g++
 CXX_FLAGS=-std=c++17
 
 targets=neuralnet test_neuralnet
