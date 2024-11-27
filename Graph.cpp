@@ -1,3 +1,4 @@
+
 #include "Graph.hpp"
 using namespace std;
 
@@ -100,10 +101,11 @@ void Graph::updateNode(int id, NodeInfo n) {
     if(nodes[id] == nullptr){ //if the node doesn't exist
         nodes[id] = new NodeInfo(n);
     }
-
-    else{ //if it does exist, then we update it
-        *nodes[id] = n;
+    else if (nodes[id] != nullptr){ //if it does exist, then we update it
+        delete nodes[id];
+        nodes[id] = new NodeInfo(n);
     }
+
 
     return; 
 }
@@ -134,8 +136,9 @@ void Graph::updateConnection(int v, int u, double w) {
         exit(1);
     }
 
+
     //if the connection already exists
-    if( adjacencyList[v].find(u) != adjacencyList[u].end()){
+    if( adjacencyList[v].find(u) != adjacencyList[v].end()){
         adjacencyList[v].at(u).weight = w; // update the U's weight to w
 
         return; //connection already exists
@@ -160,6 +163,7 @@ void Graph::clear() {
 
     nodes.clear();
     adjacencyList.clear();
+    size = 0;
 }
 
 
