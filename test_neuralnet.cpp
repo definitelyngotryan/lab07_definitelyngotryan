@@ -1,3 +1,4 @@
+
 #include "NeuralNetwork.hpp"
 #include "tdd.hpp"
 #include <vector>
@@ -165,6 +166,7 @@ void test_algorithm() {
 
     nn.setInputNodeIds({2, 5});
     nn.setOutputNodeIds({3});
+
 
     nn.eval();
     nn_2.eval();

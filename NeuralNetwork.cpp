@@ -1,5 +1,6 @@
 // includes
 #include "NeuralNetwork.hpp"
+#include <algorithm>
 using namespace std;
 
 // NeuralNetwork -----------------------------------------------------------------------------------------------------------------------------------
@@ -48,7 +49,6 @@ vector<int> NeuralNetwork::getOutputNodeIds() const {
 }
 
 
-
 // STUDENT TODO: IMPLEMENT
 vector<double> NeuralNetwork::predict(DataInstance instance) {
     vector<double> input = instance.x;
@@ -70,15 +70,18 @@ vector<double> NeuralNetwork::predict(DataInstance instance) {
     //queue that stores node IDs
     queue<int> q; 
 
-    for( int id : inputNodeIds ){
-        q.push(id);
-        visited[id] = true; // mark all the input nodes as visited
+    for( int i = 0; i < inputNodeIds.size(); i++){
+        int val = inputNodeIds.at(i);
+        q.push(val);
+        visited[val] = true; // mark all the input nodes as visited
 
         // Set initial pre-activation values for input nodes
-        nodes[id]->preActivationValue = input[id];
-        nodes[id]->postActivationValue = input[id];
-        updateNode(id, *nodes[id]); // Update input node
+        
+        nodes[val]->preActivationValue = input[i];
+        updateNode(val, *nodes[val]); 
+        
     }
+
 
 
     //iterate over the queue
@@ -92,9 +95,9 @@ vector<double> NeuralNetwork::predict(DataInstance instance) {
 
         updateNode(curr, *nodeInfo);
 
-        for(const auto& pair : adjacencyList[curr]){
+        for(auto& pair : adjacencyList[curr]){
             int neighborID = pair.first;
-            Connection c = pair.second;
+            Connection& c = pair.second;
             
             visitPredictNeighbor(c);
             
@@ -126,7 +129,7 @@ vector<double> NeuralNetwork::predict(DataInstance instance) {
 }
 
 
-// STUDENT TODO: IMPLEMENT
+// STUDENT TODO: IMPLEMENT // LINE 132
 bool NeuralNetwork::contribute(double y, double p) {
     double incomingContribution = 0;
     double outgoingContribution = 0;
@@ -137,45 +140,32 @@ bool NeuralNetwork::contribute(double y, double p) {
     // There is no need to visitContributeNode for the input layer since there is no bias to update.
 
 
-    for(int id : outputNodeIds){
-        
-        //if the node has not been found in contributions map
-        if(contributions.find(id) == contributions.end()){
-            contribute(id, y, p);
-        }
-
-        //else if the node is already found
-        else{
-            outgoingContribution = contributions.at(id);  
-                
-        }
+    for(int id : inputNodeIds){
+        outgoingContribution = contribute(id, y, p);   
+    
     }
-
+       
+    
     flush();
-
     return true;
 }
 
-// STUDENT TODO: IMPLEMENT
+
+
+// STUDENT TODO: IMPLEMENT //LINE 155
 double NeuralNetwork::contribute(int nodeId, const double& y, const double& p) {
     double incomingContribution = 0;
     double outgoingContribution = 0;
     NodeInfo* currNode = nodes.at(nodeId);
 
-
-    
     // find each incoming contribution, and contribute to the nodes outgoing weights
     // If the node is already found, use its precomputed contribution from the contributions map
     
-
-
-
-    //if the contribution IS in the map (already been found)
-    if(contributions.find(nodeId) != contributions.end()){
-        return contributions.at(nodeId);
-   
-    }
-
+    if (adjacencyList.at(nodeId).empty()) {
+        // base case, we are at the end
+        outgoingContribution = -1 * ((y - p) / (p * (1 - p)));
+        
+    } 
 
     //for each neightbor of the current node (currNode)
         //call contribute recursively to get their outgoingContribution
@@ -183,29 +173,35 @@ double NeuralNetwork::contribute(int nodeId, const double& y, const double& p) {
 
 
     //pair: first = int destination of connection; second = Connection object
-    for(const auto& pair : adjacencyList[nodeId]){
+    for( auto& pair : adjacencyList[nodeId]){
         int destination = pair.first;
-        Connection c = pair.second;
+        Connection& c = pair.second;
         
 
-        double neightborContribution = contribute(destination, y, p);
-        
-        visitContributeNeighbor(c, neightborContribution, outgoingContribution);
+        //if the contribution IS in the map (already been found)
+        if (contributions.find(destination) == contributions.end()) {  // Check destination, not nodeId
+            incomingContribution = contribute(destination, y, p);
+    }   else {
+            incomingContribution = contributions.at(destination);
+}
+
+        visitContributeNeighbor(c, incomingContribution, outgoingContribution);   
         
     }
 
-    
-    //Update the current node’s contribution using visitContributeNode.
-    visitContributeNode(nodeId, outgoingContribution);
-  
-    if (adjacencyList.at(nodeId).empty()) {
-        // base case, we are at the end
-        outgoingContribution = -1 * ((y - p) / (p * (1 - p)));
-        
-    } 
 
+
+    //Update the current node’s contribution using visitContributeNode.
     // Now contribute to yourself and prepare the outgoing contribution
-    contributions[nodeId] = outgoingContribution;
+   
+    //if it is not an input node then
+
+    //funciton find(begin, )
+    if(find(inputNodeIds.begin(), inputNodeIds.end(), nodeId) == inputNodeIds.end()){
+        visitContributeNode(nodeId, outgoingContribution);
+    }
+    
+    contributions[nodeId] = outgoingContribution; //line 206.
 
     return outgoingContribution;
 }
