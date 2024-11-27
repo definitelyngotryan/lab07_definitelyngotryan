@@ -70,9 +70,14 @@ vector<double> NeuralNetwork::predict(DataInstance instance) {
     //queue that stores node IDs
     queue<int> q; 
 
-    for( int id : inputNodeIds){
+    for( int id : inputNodeIds ){
         q.push(id);
         visited[id] = true; // mark all the input nodes as visited
+
+        // Set initial pre-activation values for input nodes
+        nodes[id]->preActivationValue = input[id];
+        nodes[id]->postActivationValue = input[id];
+        updateNode(id, *nodes[id]); // Update input node
     }
 
 
@@ -85,12 +90,11 @@ vector<double> NeuralNetwork::predict(DataInstance instance) {
 
         NodeInfo* nodeInfo = nodes[curr];
 
+        updateNode(curr, *nodeInfo);
 
-    
-        
         for(const auto& pair : adjacencyList[curr]){
             int neighborID = pair.first;
-            const Connection& c = pair.second;
+            Connection c = pair.second;
             
             visitPredictNeighbor(c);
             
@@ -121,13 +125,13 @@ vector<double> NeuralNetwork::predict(DataInstance instance) {
     return output;
 }
 
+
 // STUDENT TODO: IMPLEMENT
 bool NeuralNetwork::contribute(double y, double p) {
     double incomingContribution = 0;
     double outgoingContribution = 0;
     NodeInfo* currNode = nullptr;
 
-    contributions.clear();
     // find each incoming contribution, and contribute to the input layer's outgoing weights
     // If the node is already found, use its precomputed contribution from the contributions map
     // There is no need to visitContributeNode for the input layer since there is no bias to update.
@@ -158,19 +162,6 @@ double NeuralNetwork::contribute(int nodeId, const double& y, const double& p) {
     double outgoingContribution = 0;
     NodeInfo* currNode = nodes.at(nodeId);
 
-
-//we could  move base case to right above:
-    
-// // Now contribute to yourself and prepare the outgoing contribution
-// contributions[nodeId] = outgoingContribution;
-// return outgoingContribution;
-
-
-    if (adjacencyList.at(nodeId).empty()) {
-        // base case, we are at the end
-        outgoingContribution = -1 * ((y - p) / (p * (1 - p)));
-        return outgoingContribution;
-    } 
 
     
     // find each incoming contribution, and contribute to the nodes outgoing weights
@@ -207,6 +198,11 @@ double NeuralNetwork::contribute(int nodeId, const double& y, const double& p) {
     //Update the current node’s contribution using visitContributeNode.
     visitContributeNode(nodeId, outgoingContribution);
   
+    if (adjacencyList.at(nodeId).empty()) {
+        // base case, we are at the end
+        outgoingContribution = -1 * ((y - p) / (p * (1 - p)));
+        
+    } 
 
     // Now contribute to yourself and prepare the outgoing contribution
     contributions[nodeId] = outgoingContribution;
